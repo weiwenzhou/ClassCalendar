@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
+from classes.views import CourseListView, UpcomingClassesView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', TemplateView.as_view(template_name='search_classes.html'), name='search_classes'),
+    path('api/courses/', CourseListView.as_view(), name='course_list'),
+    path('api/upcoming-classes/', UpcomingClassesView.as_view(), name='upcoming_classes'),
 ]
