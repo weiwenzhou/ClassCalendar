@@ -16,16 +16,20 @@ class CourseListView(APIView):
 class UpcomingClassesView(APIView):
     def get(self, request):
         course_id = request.query_params.get('course_id')
-        if not course_id:
-            return Response({'error': 'course_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            course = Course.objects.get(id=course_id)
-        except Course.DoesNotExist:
-            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
-
         now = timezone.now()
-        upcoming_classes = Class.objects.filter(course=course, start_time__gte=now).order_by('start_time')
+        if course_id:
+            try:
+                course = Course.objects.get(id=course_id)
+            except Course.DoesNotExist:
+                return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            upcoming_classes = Class.objects.filter(course=course, start_time__gte=now).order_by('start_time')
+        else:
+            upcoming_classes = Class.objects.filter(start_time__gte=now).order_by('start_time')
+
+        count = request.query_params.get('count')
+        if count:
+            upcoming_classes = upcoming_classes[:int(count)]
 
         serializer = ClassSerializer(upcoming_classes, many=True)
         return Response(serializer.data)
